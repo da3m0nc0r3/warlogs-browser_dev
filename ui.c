@@ -1,3 +1,6 @@
+// ui.c
+
+#include <string.h>
 #include "types.h"
 
 void cleanupWindows() {

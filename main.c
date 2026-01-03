@@ -1,3 +1,5 @@
+//main.c
+
 #include <sqlite3.h>
 #include <stdio.h>
 #include <ncurses.h>
@@ -9,15 +11,7 @@
 #include "db.h"
 #include "display.h"
 
-///////////////////////////////////////////////////////////////////////////////
-/// Global vars & windows ////////////////////////////////////////////////////
-// sqlite3 *db;
-// sqlite3_stmt *result;
 
-// #define SEARCH_EXIT      0      // Search return value
-// #define SEARCH_OPEN_REC  1      // Search return value
-// #define SEARCH_NEW_QUERY 2      // Search return value
-// #define BORDER 2                // Border calc factor for calculating window sizes
 
 unsigned int ch;
 // int record_nr = 1;
@@ -25,22 +19,7 @@ unsigned int ch;
 int last_search_rowid = 0;      // Store last search row ID
 char current_search[256] = "";  // For the 'n' case
 
-int content_pad_lines = 0;      // veriable for dynamic content pad
-int content_scroll = 0;         // flag for scrollable window
-int in_scroll = 0;              // flag for in scroll (for key handling)
-int content_total_lines = 0;    // total number of lines in record
 
-
-
-// Windows for different sections
-// WINDOW *win_header = NULL;     // top field
-// WINDOW *win_content = NULL;    // main document window
-// WINDOW *win_status = NULL;     // bottom field
-// WINDOW *win_input = NULL;      // search input
-// WINDOW *win_sresult = NULL;    // search results
-
-// scrollable content pad
-// WINDOW *content_pad = NULL;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// function declarations
@@ -49,488 +28,7 @@ int showFullRecord(int rec_nr);
 int browseSearchResults(const char *term);
 int searchByText(const char *term, int start_after);
 
-///////////////////////////////////////////////////////////////////////////////
-/// initWindows() - Create window layout
-//
-// void initWindows() {
-//     int max_y, max_x;
-//     getmaxyx(stdscr, max_y, max_x);
-    
-//     int HEADER_HEIGHT   = 3 + BORDER;
-//     int STATUS_HEIGHT   = 0 + BORDER;
-//     // int INPUT_HEIGHT    = 1 + BORDER;
-//     // int CONTENT_HEIGHT  = max_y - HEADER_HEIGHT - STATUS_HEIGHT;
 
-
-//     // Create windows
-//     win_header = newwin(HEADER_HEIGHT, max_x, 0, 0);
-//     win_content = newwin(max_y - HEADER_HEIGHT - STATUS_HEIGHT, max_x, HEADER_HEIGHT, 0);
-//     win_status = newwin(STATUS_HEIGHT, max_x, max_y - STATUS_HEIGHT, 0);
-    
-//     // Enable scrolling for content window
-//     scrollok(win_content, TRUE);
-    
-//     // Draw borders
-//     box(win_header, 0, 0);
-//     box(win_content, 0, 0);
-//     box(win_status, 0, 0);
-    
-//     wrefresh(win_header);
-//     wrefresh(win_content);
-//     wrefresh(win_status);
-// }
-
-///////////////////////////////////////////////////////////////////////////////
-/// cleanupWindows()
-//
-// void cleanupWindows() {
-//     if (win_header) delwin(win_header);
-//     if (win_content) delwin(win_content);
-//     if (win_status) delwin(win_status);
-//     if (win_input) delwin(win_input);
-//     if (win_sresult) delwin(win_sresult);
-// }
-
-///////////////////////////////////////////////////////////////////////////////
-/// updateHeader()
-//
-// void updateHeader() {
-
-//     int header_line = 1;
-
-//     werase(win_header);
-//     box(win_header, 0, 0);
-
-//     int max_width = getmaxx(win_header) -2;         // width minus borders    
-//     // Header info
-//     mvwprintw(win_header, header_line ++, 2, "Record: %s / %d | %s |", 
-//         sqlite3_column_text(result, 0),
-//         records, 
-//         sqlite3_column_text(result, 1));
-
-//     mvwprintw(win_header, header_line ++, 2, "Lat: %s | Lon: %s |", 
-//         sqlite3_column_text(result, 2), 
-//         sqlite3_column_text(result, 3)); 
-
-//     mvwprintw(win_header, header_line ++, 2, "Unit: %s | Type: %s |",
-//         sqlite3_column_text(result, 4), 
-//         sqlite3_column_text(result, 5));
-
-//     mvwprintw(win_header, header_line ++, (max_width - 7) / 2, "[ %s ]",        // print in center / on border
-//         sqlite3_column_text(result, 6));
-
-//     header_line = 1;    // Reset line count to 1 for print in right part
-
-//     mvwprintw(win_header, header_line ++, max_width - 45, "Coalition :               WIA: %s, KIA: %s", 
-//         sqlite3_column_text(result, 7), 
-//         sqlite3_column_text(result, 8));
-
-//     mvwprintw(win_header, header_line ++, max_width - 45, "Host      :               WIA: %s, KIA: %s", 
-//         sqlite3_column_text(result, 9), 
-//         sqlite3_column_text(result, 10));
-
-//     mvwprintw(win_header, header_line ++, max_width - 45, "Enemy     :  Detained: %s, WIA: %s, KIA: %s", 
-//         sqlite3_column_text(result, 13), 
-//         sqlite3_column_text(result, 11), 
-//         sqlite3_column_text(result, 12));
-
-//     wrefresh(win_header);
-
-//     return;
-// }
-
-///////////////////////////////////////////////////////////////////////////////
-/// updateStatus()
-//
-// void updateStatus(const char *message) {
-//     werase(win_status);
-//     box(win_status, 0, 0);
-//     mvwprintw(win_status, 1, 2, "%s", message);
-//     wrefresh(win_status);
-// }
-
-///////////////////////////////////////////////////////////////////////////////
-/// getTextInput() - Free text input with ncurses
-//
-// int getTextInput(const char *prompt, char *buffer, int max_len) {
-//     int max_y, max_x;
-//     getmaxyx(stdscr, max_y, max_x);
-    
-//     // Create input window in center
-//     int win_width = max_x - 10;
-//     int win_height = 5;
-//     win_input = newwin(win_height, win_width, 
-//                        (max_y - win_height) / 2, 
-//                        (max_x - win_width) / 2);
-    
-//     box(win_input, 0, 0);
-//     mvwprintw(win_input, 1, 2, "%s", prompt);
-//     mvwprintw(win_input, 3, 2, "> ");
-//     wrefresh(win_input);
-    
-//     // Enable echo and move cursor
-//     echo();
-//     curs_set(1);
-    
-//     // Get input
-//     wmove(win_input, 3, 4);
-//     wgetnstr(win_input, buffer, max_len - 1);
-    
-//     // Restore settings
-//     noecho();
-//     curs_set(0);
-    
-//     delwin(win_input);
-//     win_input = NULL;
-    
-//     // Redraw main windows
-//     touchwin(stdscr);
-//     touchwin(win_header);
-//     touchwin(win_content);
-//     touchwin(win_status);
-//     wrefresh(win_header);
-//     wrefresh(win_content);
-//     wrefresh(win_status);
-//     refresh();
-    
-//     return strlen(buffer);
-// }
-
-///////////////////////////////////////////////////////////////////////////////
-/// db helper functions
-//
-// int db_open(void) {
-//     return sqlite3_open("../afg.db", &db) == SQLITE_OK;
-// }
-
-// void db_close(void) {
-//     sqlite3_close(db);
-// }
-
-///////////////////////////////////////////////////////////////////////////////
-/// sqlQuery()
-// //
-// int sqlQuery(char *sql) {
-//     int rc = sqlite3_open("../afg.db", &db);
-    
-//     if (rc != SQLITE_OK) {
-//         updateStatus("[ ERROR: Cannot open database ]");
-//         sqlite3_close(db);
-
-//         return 1;
-//     }
-    
-//     rc = sqlite3_prepare_v2(db, sql, -1, &result, NULL);
-    
-//     if (rc == SQLITE_OK) {
-//         int idx = sqlite3_bind_parameter_index(result, "@id");
-
-//         if (idx > 0) {
-//             sqlite3_bind_int(result, idx, record_nr);
-//         }
-
-//     } else {
-//         updateStatus("[ ERROR: Failed to execute statement ]");
-
-//         return 1;
-//     }
-    
-//     return 0;
-// }
-
-///////////////////////////////////////////////////////////////////////////////
-/// countRecords()
-//
-// int countRecords() {
-//     char *sql = "SELECT COUNT(*) from afg";
-    
-//     if (sqlQuery(sql) != 0) return 1;
-    
-//     int step = sqlite3_step(result);
-    
-//     if (step == SQLITE_ROW) {
-//         records = sqlite3_column_int(result, 0);
-//     }
-    
-//     sqlite3_finalize(result);
-//     sqlite3_close(db);
-    
-//     return 0;
-// }
-
-///////////////////////////////////////////////////////////////////////////////
-/// Helper function to print highlighted text
-//
-// void print_highlighted(WINDOW *win, int y, int x, const char *text, const char *term) {
-
-//         if (!term || !*term) {
-//             mvwprintw(win, y, x, "%s", text);
-
-//             return;
-//         }
-//         const char *p = text;
-//         int term_len = strlen(term);
-
-//         while (*p) {
-//             const char *match = strcasestr(p, term);
-
-//             if (!match) {
-//                 wprintw(win, "%s", p);
-
-//                 break;
-//             }
-
-//             wprintw(win, "%.*s", (int)(match - p), p);
-//             wattron(win, COLOR_PAIR(1) | A_BOLD);
-//             wprintw(win, "%.*s", term_len, match);
-//             wattroff(win, COLOR_PAIR(1) | A_BOLD);
-//             p = match + term_len;
-//         }
-//     }
-
-///////////////////////////////////////////////////////////////////////////////
-/// Word wrap function
-//
-// void print_wrapped(WINDOW *win, int *line, int start_x, int max_width,
-//                                 const char *text, const char *highlight) {    
-//     int col = 0;
-//     const char *p = text;
-
-//     wmove(win, *line, start_x);
-
-//     while (*p) {
-//         /* Handle explicit newlines */
-//         if (*p == '\n') {
-//             (*line) ++;
-//             col = 0;
-//             wmove(win, *line, start_x);
-//             p++;
-
-//             continue;
-//         }
-
-//         /* Extract one word */
-//         const char *word_start = p;
-//         int word_len = 0;
-
-//         while (p[word_len] && p[word_len] != ' ' && p[word_len] != '\n')
-//             word_len ++;
-
-//         /* overflow prevention */
-//         if (word_len > max_width) {
-//             word_len = max_width - 3;               // -3 to fix overflow bug
-//         }
-
-//         /* Move to next line if word won't fit */
-//         if (col + word_len > max_width - 3) {       // -3 to fix overflow bug
-//             (*line) ++;
-//             col = 0;
-//             wmove(win, *line, start_x);
-//         }
-
-//         /* Print the word (with optional highlight) */
-//         if (highlight && *highlight) {
-//             char word[512];
-//             strncpy(word, word_start, word_len);
-//             word[word_len] = '\0';
-//             print_highlighted(win, *line, start_x + col, word, highlight);
-
-//         } else {
-//             wprintw(win, "%.*s", word_len, word_start);
-//         }
-
-//         col += word_len;
-//         p += word_len;
-
-//         /* Print following space */
-//         if (*p == ' ') {
-//             if (col + 1 > max_width -3) {           // -3 to fix overflow bug
-//                 (*line) ++;
-//                 col = 0;
-//                 wmove(win, *line, start_x);
-            
-//             } else {            
-//                 waddch(win, ' ');
-//                 col ++;
-//             }
-//             p ++;
-//         }
-//     }
-
-//     (*line) ++;
-// }
-
-///////////////////////////////////////////////////////////////////////////////
-/// refresh_content_pad()
-//
-// void refresh_content_pad(void) {
-//     int wy, wx;
-//     int h = getmaxy(win_content) - 2;
-//     int w = getmaxx(win_content) - 2;
-
-//     getbegyx(win_content, wy, wx);
-
-//     prefresh(
-//         content_pad,
-//         content_scroll, 0,          // pad start
-//         wy + 1, wx + 1,             // screen start
-//         wy + h, wx + w              // screen end
-//     );
-// }
-
-///////////////////////////////////////////////////////////////////////////////
-/// scroll_content()
-//
-// void scroll_content(int delta) {
-//     int content_height = getmaxy(win_content) - 2;
-
-//     int max_scroll = content_total_lines - content_height;
-//     if (max_scroll < 0) max_scroll = 0;
-
-//     int new_scroll = content_scroll + delta;
-
-//     if (new_scroll < 0) new_scroll = 0;
-//     if (new_scroll > max_scroll) new_scroll = max_scroll;
-
-//     int diff = new_scroll - content_scroll;
-
-//     if (diff != 0) {
-//         wscrl(win_content, diff);
-//         content_scroll = new_scroll;
-//         wrefresh(win_content);
-//     }
-// }
-
-///////////////////////////////////////////////////////////////////////////////
-/// showFullRecord()
-//
-// int showFullRecord(int rec_nr) {
-//     record_nr = rec_nr;
-//     char *sql = "SELECT _rowid_, DateOccurred, Latitude, Longitude, UnitName, "
-//                 "TypeOfUnit, Classification, friendlywia, friendlykia, "
-//                 "hostnationwia, hostnationkia, enemywia, enemykia, enemydetained, "
-//                 "Title, Summary FROM afg WHERE _rowid_ = @id";
-    
-//     if (sqlQuery(sql) != 0) 
-//         return 1;
-    
-//     int step = sqlite3_step(result);
-
-//     // int content_scroll = 0;
-//     // int content_line = 0;
-
-//     // Calculate how much fits on one screen
-//     int content_height = getmaxy(win_content) - 2;  // height minus borders
-//     int max_width = getmaxx(win_header) -2;         // width minus borders    
-
-//     // Clear content window
-//     werase(win_content);
-//     box(win_content, 0, 0);
-//     wrefresh(win_content);
-
-//     // Clear header window
-//     werase(win_header);
-//     box(win_header, 0, 0);
-    
-//     if (step == SQLITE_ROW) {
-
-//        int header_line = 1;
-//        int content_line = 1;
-
-//     // Setting up the pad ////////////////////////////////////////////////////////////////////
-//     //
-//        int pad_width = getmaxx(win_content) - 4;    // screen width minus borders minus margs
-//        int pad_height = 5000;                       // lines are cheap in ncurses
-
-//         if (content_pad)
-//             delwin(content_pad);
-
-//         content_pad = newpad(pad_height, pad_width);
-//     //
-//     /////////////////////////////////////////////////////////////////////////////////////////
-
-//         // Header info
-//         mvwprintw(win_header, header_line ++, 2, "Record: %s / %d | %s |", 
-//             sqlite3_column_text(result, 0),
-//             records, 
-//             sqlite3_column_text(result, 1));
-
-//         mvwprintw(win_header, header_line ++, 2, "Lat: %s | Lon: %s |", 
-//             sqlite3_column_text(result, 2), 
-//             sqlite3_column_text(result, 3)); 
-
-//         mvwprintw(win_header, header_line ++, 2, "Unit: %s | Type: %s |",
-//             sqlite3_column_text(result, 4), 
-//             sqlite3_column_text(result, 5));
-        
-//         mvwprintw(win_header, header_line ++, (max_width - 7) / 2, "[ %s ]",
-//             sqlite3_column_text(result, 6));
-
-//         header_line = 1;
-        
-//         // Casualties
-// //        mvwprintw(win_header, header_line +1,    max_width - 50, "CAS:");
-
-//         mvwprintw(win_header, header_line ++, max_width - 45, "Coalition :               WIA: %s, KIA: %s", 
-//             sqlite3_column_text(result, 7), 
-//             sqlite3_column_text(result, 8));
-
-//         mvwprintw(win_header, header_line ++, max_width - 45, "Host      :               WIA: %s, KIA: %s", 
-//             sqlite3_column_text(result, 9), 
-//             sqlite3_column_text(result, 10));
-
-//         mvwprintw(win_header, header_line ++, max_width - 45, "Enemy     :  Detained: %s, WIA: %s, KIA: %s", 
-//             sqlite3_column_text(result, 13), 
-//             sqlite3_column_text(result, 11), 
-//             sqlite3_column_text(result, 12));
-
-//         content_line ++;
-        
-//         // Word wrap the title
-//         const char *title = (const char *)sqlite3_column_text(result, 14);
-//         int max_width = getmaxx(win_content) - 6;
-//         print_wrapped(content_pad, &content_line, 4, max_width, title, current_search);
-
-//         content_line ++;
-
-//         // Word wrap the summary
-//         const char *summary = (const char *)sqlite3_column_text(result, 15);
-//         print_wrapped(content_pad, &content_line, 4, max_width, summary, current_search);
-
-//         content_total_lines = content_line;
-//         content_pad_lines = content_line;
-//         content_scroll = 0;
-
-//         // Status hint for scrollable window
-//         if (content_total_lines > content_height) {
-//             updateStatus("[ Up/Dn: scroll current document | <- prev | -> next | [ENTER] to end scroll mode | q quit browser ]");
-
-//        }else if (current_search[0] == '\0') {
-//                 updateStatus("[ Up/Dn : pre/next record | <-/-> : -/+100 | PgDn/PgUp : +/-1000 | /,s: search | q quit browser ]");
-
-//             }else{
-//                 updateStatus("[ Up/Dn : pre/next record | <-/-> : -/+100 | PgDn/PgUp : +/-1000 | /,s: search n : Next in search | q quit browser ]");
-//         }        
-
-//     } else {
-//         mvwprintw(content_pad, 1, 2, "No record found.");
-//     }        
-
-//     if (!content_pad)
-//         updateStatus("[ DEBUG: content_pad is NULL ]");
-
-//     refresh_content_pad();
-//     wrefresh(win_header);
-//     wrefresh(win_content);
-//     wrefresh(win_status);
-
-// //    updateHeader();
-    
-//     sqlite3_finalize(result);
-//     sqlite3_close(db);
-
-//     return 0;
-// }
 
 ///////////////////////////////////////////////////////////////////////////////
 /// searchCollect()  Search query that returns multiple rows
@@ -901,19 +399,37 @@ int browse() {
                 
             case '/':  // Search
             case 's':  
-                {
-                    char buf[256] = "";
-                    if (getTextInput("Search (Title/Summary):", buf, sizeof(buf)) > 0) {
-                        strcpy(current_search, buf);
-                        last_search_rowid = 0;
-                        int rc = browseSearchResults(buf);
+            {
+                char buf[MAX_SEARCH_LEN] = "";
 
-                        if (rc == SEARCH_NEW_QUERY) {
-                            browseSearchResults(current_search);
+                if (getTextInput("Search (Title/Summary):", buf, sizeof(buf)) > 0) {
+                    strcpy(current_search, buf);
+                    last_search_rowid = 0;
+
+                    int num_matches = searchByText(current_search, 0);
+
+                    if (num_matches > 0) {
+                        int selected_row = browseSearchResults(current_search);
+
+                        if (selected_row > 0) {
+                            record_nr = selected_row;
+                            last_search_rowid = record_nr;
+                            showFullRecord(record_nr);
+
+                            if (current_search[0] != '\0') {
+                                char status_buf[256];
+                                snprintf(status_buf, sizeof(status_buf),
+                                         "[ Record %d / %d | Search: \"%s\" | n: next match ]",
+                                         record_nr, records, current_search);
+                                updateStatus(status_buf);
+                            } else {
+                                updateStatus("[ Press '?' for help | 'q' to quit ]");
+                            }
                         }
                     }
-                    break;
                 }
+                break;
+            }
 
             case '#':
             case 'g':  // Go to record
@@ -921,25 +437,24 @@ int browse() {
                 break;
             
             case 'n':  // Next result after search
-                {
-                    if (current_search[0] == '\0') {
-                        updateStatus("[ No active search ]");
-                        break;
-                    }
-
-                    int found = searchByText(current_search, last_search_rowid);
-
-                    if (found > 0) {
-                        last_search_rowid = found;
-                        record_nr = found;
-                        showFullRecord(record_nr);
-                        updateStatus("[ n: Next result ]");
-
-                    }else{
-                        updateStatus("[ No more results ]");
-                    }
+            {
+                if (current_search[0] == '\0') {
+                    updateStatus("[ No active search ]");
                     break;
                 }
+
+                int found = searchByText(current_search, last_search_rowid);
+
+                if (found > 0) {
+                    last_search_rowid = found;
+                    record_nr = found;
+                    showFullRecord(record_nr);
+                    updateStatus("[ n: Next result ]");
+                } else {
+                    updateStatus("[ No more results ]");
+                }
+                break;
+            }
 
             case ' ':
             case '\n':

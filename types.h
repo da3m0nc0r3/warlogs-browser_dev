@@ -1,3 +1,5 @@
+// types.h
+
 #ifndef TYPES_H
 #define TYPES_H
 
@@ -23,5 +25,14 @@ extern WINDOW *win_sresult;
 
 extern int record_nr;
 extern int records;
+
+extern int content_pad_lines;
+extern int content_scroll;
+extern int in_scroll;
+extern int content_total_lines;
+
+extern char current_search[MAX_SEARCH_LEN];  // Active search term
+extern int last_search_rowid;               // Last found row ID
+
 
 #endif	
