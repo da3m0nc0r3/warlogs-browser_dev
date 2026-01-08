@@ -3,7 +3,7 @@
 
 TARGET  := bin/warlogs-browser
 CC      := gcc
-CFLAGS  := -Wall -Wextra -pedantic -std=c11 -g
+CFLAGS  := -Wall -Wextra -std=c11
 LDFLAGS :=
 LDLIBS  := -lncurses -lsqlite3
 
@@ -13,7 +13,8 @@ OBJECTS := $(patsubst src/%.c, obj/%.o, $(SOURCES))
 DEPFILES := $(patsubst src/%.c, obj/%.d, $(SOURCES))
 
 # Add include path
-CFLAGS := -Wall -Wextra -pedantic -std=c11 -g -D_GNU_SOURCE
+CFLAGS := -Wall -Wextra -pedantic -std=c11 -g -D_GNU_SOURCE -Iinclude
+
 
 # === Main targets ===
 .PHONY: all run clean debug pedantic
@@ -39,7 +40,7 @@ obj/%.o: src/%.c | obj
 run: $(TARGET)
 	@$(TARGET)   # @ = don't print command before executing
 
-debug: CFLAGS += -Og -ggdb3
+debug: CFLAGS += -Og -ggdb3 -v -g
 debug: clean all
 	@echo "Debug build ready. You can now run:"
 	@echo "  gdb $(TARGET)"
@@ -51,5 +52,6 @@ clean:
 	$(RM) -r bin obj
 	clear
 
-pedantic: CFLAGS += -Werror -Wshadow -Wconversion -Wsign-conversion
+pedantic: CFLAGS += -Werror -Wshadow -Wconversion -Wsign-conversion -pedantic
 pedantic: clean all
+

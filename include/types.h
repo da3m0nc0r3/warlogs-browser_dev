@@ -11,7 +11,7 @@
 #define SEARCH_OPEN_REC  	1      // Search return value
 #define SEARCH_NEW_QUERY 	2      // Search return value
 
-#define MAX_SEARCH_LEN		256
+#define MAX_SEARCH_LEN		512
 
 extern sqlite3 *db;
 extern sqlite3_stmt *result;

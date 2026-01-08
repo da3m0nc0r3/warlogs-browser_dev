@@ -7,13 +7,14 @@
 #include <stdlib.h>
 
 #include "types.h"
+#include "display.h"
+#include "search.h"
 #include "ui.h"
 #include "db.h"
-#include "display.h"
 
 
 
-unsigned int ch;
+// unsigned int ch;
 // int record_nr = 1;
 // int records;
 int last_search_rowid = 0;      // Store last search row ID
@@ -25,7 +26,7 @@ char current_search[512] = "";  // For the 'n' case
 /// function declarations
 //
 int showFullRecord(int rec_nr);
-int browseSearchResults(const char *term);
+//int browseSearchResults(const char *term);
 int searchByText(const char *term, int start_after);
 
 
@@ -199,10 +200,10 @@ int browseSearchResults(const char *term) {
                       results[i].rowid,
                       results[i].class,
                       results[i].date,
-                      win_width - 40,               // dim title dynamically
+                      win_width - 40,               // dim title
                       results[i].title);
 
-            if (page_index == selected)
+            if (page_index == selected)     
                 wattroff(win_sresult, A_REVERSE);
         }
 
@@ -222,6 +223,7 @@ int browseSearchResults(const char *term) {
         updateStatus("[ Up/Dn: select | Enter: open | PgUp/PgDn prev/next page | q cancel ]");
 
         int ch = wgetch(win_sresult);
+        // unsigned int ch = wgetch(win_sresult);
 
         // Handle key presses in the search results popup window
         if (ch == 'q' || ch == 27) {                // Q or ESC to exit
@@ -323,6 +325,8 @@ int getRecordByNr() {
 int browse() {
     in_scroll = 0;
     updateStatus("[ Press '?' for help | 'q' to quit ]");
+    int ch;                // key buffer
+
 //    updateHeader();
 
     while ((ch = getch()) != 'q') {
@@ -417,9 +421,9 @@ int browse() {
                             showFullRecord(record_nr);
 
                             if (current_search[0] != '\0') {
-                                char status_buf[256];
+                                char status_buf[512];
                                 snprintf(status_buf, sizeof(status_buf),
-                                         "[ Record %d / %d | Search: \"%s\" | n: next match ]",
+                                         "[ Record %d / %d | Search: \"%.255s\" | n: next match ]",
                                          record_nr, records, current_search);
                                 updateStatus(status_buf);
                             } else {

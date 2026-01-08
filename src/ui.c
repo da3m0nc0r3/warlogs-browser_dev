@@ -1,5 +1,5 @@
 // ui.c
-#define _GNU_SOURCE
+// #define _GNU_SOURCE
 
 #include <string.h>
 #include "types.h"

@@ -1,5 +1,6 @@
 // db.c
 
+#include "types.h"
 #include "db.h"
 #include "ui.h"         // for updateStatus()
 
