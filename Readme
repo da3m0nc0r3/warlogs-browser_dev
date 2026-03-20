@@ -1,3 +1,16 @@
+
+PLEASE NOTE:
+
+This is an exercise in ncurses which I haven't used before. The goal is to re-write a very simple database browser I wrote several years ago, to implement a nice TUI similar to 'mc', 'htop', 'nano', etc.
+It's also an exercise in GitHub usage so bear with me if it's a total mess at this point.
+
+This repository contains files for the project being reorganized from monolithic to modular structure. The project compiles flawlessly under Linux as a monolithic project but after an attempt to modularize it, it won't compile anymore and I just can't find out why at the moment. I'm suffering from severe ME/CFS with heavy brainfog and concentration issues so this project is paused for the time being. I will debug and continue when I'm back to my functioning self again. Probably.
+
+/C0R3
+
+
+
+
 AUTHOR:
               ██████╗ ██████╗ ██████╗ ██████╗
              ██╔════╝██╔═████╗██╔══██╗╚════██╗
@@ -27,9 +40,10 @@ AUTHOR:
 
 
 
-ABSTRACT: A database browser for the infamous 'warlogs' from the two military operations in Iraq respective Afghanistan labeled 'OP Iraqi Freedom (OIF)' and 'OP Enduring Freedom (OEF)'. These databases were stolen by a disloyal private, Bradley Edward Manning, later becoming gender confused by a mental condition 'Gender Dysphoria' and today calling himself 'Chelsea Elizabeth Manning'.
+ABSTRACT: A database browser for the infamous 'warlogs' from the two military operations in Iraq respective Afghanistan labeled 'OP Iraqi Freedom (OIF)' and 'OP Enduring Freedom (OEF)'. These databases were stolen by a disloyal private; Bradley Edward Manning, later becoming gender confused by a mental condition called 'Gender Dysphoria' and today calling himself 'Chelsea Elizabeth Manning'.
 
 Manning was assigned the role of junior intelligence analyst and committed the crime of espionage when stealing these databases, smuggling them out of base on a pirated 'Lady Gaga' CD and uploading the database to WikiLeaks, an organization known to be acting as an agent for Russia, China and other anti-western entities. He was rightfully sentenced to 35 years imprisonment but the former US President, Barrack Hussein Obama, commuted the sentence and freed Manning after serving only 7 years with credit for time served in custody.
+
 
 This browser reads the database SQLite files, presents the documents in a nice, windowed TUI with a header containing metadata like document classification, date, geographic position, units involved, EKIA, EWIA, KIA, WIA, etc. provided by ncurses and provides free text search functionality for the document collection. The main document window scrolls when necessary and a status bar at the bottom contains navigation key help, doc status and search status.
 
